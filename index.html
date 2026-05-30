@@ -1,0 +1,383 @@
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#FEFCF8;--surface:#F5F1EA;--border:#D4CEC2;--border-strong:#A89E94;
+    --text:#1C1A16;--muted:#72695E;--accent:#2C4B70;--accent-bg:#EEF3F9;
+    --ok:#1D6B3A;--ok-bg:#D4EDDA;--warn:#8A5A00;--warn-bg:#FDF6CC;
+    --err:#7A1A1A;--err-bg:#FCEAEA;--mono:'Source Code Pro',ui-monospace,monospace;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1A1814;--surface:#242220;--border:#3A3830;--border-strong:#5A5550;
+      --text:#E8E4DC;--muted:#9A9288;--accent:#7AAED4;--accent-bg:#1A2A3A;
+      --ok:#5DCAA5;--ok-bg:#083424;--warn:#EF9F27;--warn-bg:#2A1C00;
+      --err:#F09595;--err-bg:#2A0A0A;
+    }
+  }
+  body{font-family:'Source Serif 4',Georgia,serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;min-height:100vh;padding:0}
+  .sans{font-family:'Source Sans 3',system-ui,sans-serif}
+  h1{font-family:'Source Sans 3',system-ui,sans-serif;font-size:1.1rem;font-weight:600;letter-spacing:.01em;color:var(--text)}
+  .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:28px 24px;display:flex;flex-direction:column;gap:24px}
+  .logo{display:flex;align-items:center;gap:10px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+  .logo-mark{width:28px;height:28px;border:1.5px solid var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center}
+  .logo-mark svg{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round}
+  .logo-text{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .section-label{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .input-group{display:flex;flex-direction:column;gap:6px}
+  input[type=text],input[type=file]{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.85rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);width:100%;outline:none;transition:border-color .15s}
+  input[type=text]:focus{border-color:var(--border-strong)}
+  input[type=file]{cursor:pointer;font-size:.75rem;padding:7px 10px;color:var(--muted)}
+  .hint{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.72rem;color:var(--muted);line-height:1.5}
+  .btn{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.8rem;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:5px;padding:9px 16px;cursor:pointer;width:100%;letter-spacing:.02em;transition:opacity .15s}
+  .btn:hover{opacity:.85}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--accent);border:1px solid var(--border);font-family:'Source Sans 3',system-ui,sans-serif;font-size:.8rem;font-weight:600;border-radius:5px;padding:8px 16px;cursor:pointer;width:100%;letter-spacing:.02em;transition:background .12s}
+  .btn-ghost:hover{background:var(--surface)}
+  .divider{height:1px;background:var(--border)}
+  .main{padding:40px 48px;overflow-y:auto}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;text-align:center}
+  .empty-icon{width:48px;height:48px;border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .empty-icon svg{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .empty-label{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.85rem;color:var(--muted)}
+  .panel{background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:20px;overflow:hidden}
+  .panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+  .panel-title{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .panel-body{padding:18px}
+  .badge{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;padding:2px 8px;display:inline-block}
+  .badge-ok{background:var(--ok-bg);color:var(--ok)}
+  .badge-warn{background:var(--warn-bg);color:var(--warn)}
+  .badge-err{background:var(--err-bg);color:var(--err)}
+  .badge-gray{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:12px 14px}
+  .stat-l{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .stat-v{font-family:'Source Sans 3',system-ui,sans-serif;font-size:1.4rem;font-weight:600;color:var(--text);margin-top:2px}
+  .tbl{width:100%;border-collapse:collapse;font-family:'Source Sans 3',system-ui,sans-serif;font-size:.8rem}
+  .tbl th{text-align:left;padding:7px 12px;background:var(--surface);border:1px solid var(--border);font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+  .tbl td{padding:8px 12px;border:1px solid var(--border);vertical-align:top}
+  .tbl tr:nth-child(even) td{background:var(--surface)}
+  .snap-row{border-left:3px solid;border-radius:0 4px 4px 0;background:var(--surface);padding:7px 12px;display:grid;grid-template-columns:6em 1fr 1fr 1fr;gap:4px 12px;align-items:center;font-family:'Source Sans 3',system-ui,sans-serif;font-size:.78rem;margin-bottom:4px}
+  .snap-signed{background:var(--accent-bg)}
+  .snap-id{color:var(--muted);font-size:.7rem}
+  .snap-wc{font-weight:600}
+  .snap-wt{color:var(--muted)}
+  .snap-status{text-align:right}
+  .mono{font-family:var(--mono);font-size:.72rem;color:var(--muted);word-break:break-all}
+  .match-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;font-family:'Source Sans 3',system-ui,sans-serif;font-size:.82rem}
+  .match-icon{flex-shrink:0;width:18px;height:18px;margin-top:1px}
+  .match-icon svg{width:18px;height:18px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .ok-icon{stroke:var(--ok)}
+  .err-icon{stroke:var(--err)}
+  .warn-icon{stroke:var(--warn)}
+  .section-divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+  .progress{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
+  .progress-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+  .error-box{background:var(--err-bg);border:1px solid var(--err);border-radius:5px;padding:12px 16px;font-family:'Source Sans 3',system-ui,sans-serif;font-size:.82rem;color:var(--err)}
+  .worker-url{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .tab{font-family:'Source Sans 3',system-ui,sans-serif;font-size:.78rem;font-weight:600;padding:9px 16px;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);background:none;border-top:none;border-left:none;border-right:none;margin-bottom:-1px;transition:color .12s,border-color .12s}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab:hover:not(.active){color:var(--text)}
+  .loading-dots{display:inline-flex;gap:4px;margin-left:8px}
+  .loading-dots span{width:4px;height:4px;border-radius:50%;background:var(--muted);animation:pulse 1.2s infinite}
+  .loading-dots span:nth-child(2){animation-delay:.2s}
+  .loading-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes pulse{0%,80%,100%{opacity:.2}40%{opacity:1}}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:wght@400&display=swap" rel="stylesheet">
+
+<h2 class="sr-only">Scrbr session verifier — enter a session ID or upload a report file to check signing log integrity</h2>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14"><polyline points="2,10 5,6 8,8 12,3"/><circle cx="12" cy="3" r="1.5" fill="var(--accent)" stroke="none"/></svg>
+      </div>
+      <span class="logo-text">scrbr verify</span>
+    </div>
+
+    <div>
+      <div class="section-label">Session ID</div>
+      <div class="input-group">
+        <input type="text" id="session-id-input" placeholder="e.g. 1338828447" maxlength="20">
+        <p class="hint">10-digit verifier ID from your session file or report footer.</p>
+        <button class="btn" id="btn-fetch-log">Fetch signing log</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-label">Report file</div>
+      <div class="input-group">
+        <input type="file" id="file-input" accept=".html,.json">
+        <p class="hint">Upload an exported .html report or .json session backup to cross-check against the server log.</p>
+        <button class="btn-ghost" id="btn-load-file">Load &amp; compare</button>
+      </div>
+    </div>
+
+    <div style="margin-top:auto">
+      <p class="hint" style="margin-bottom:6px">Signing service</p>
+      <p class="worker-url">0476756423.zzcjmd2b7y.workers.dev</p>
+      <div id="worker-status" style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <div id="ws-dot" style="width:7px;height:7px;border-radius:50%;background:var(--border)"></div>
+        <span id="ws-label" class="hint" style="font-size:.72rem">checking…</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-area">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/></svg>
+      </div>
+      <p class="empty-label">Enter a session ID or upload a report file to begin verification.</p>
+    </div>
+    <div id="result-area" style="display:none"></div>
+  </main>
+</div>
+
+<script>
+const WORKER = 'https://0476756423.zzcjmd2b7y.workers.dev';
+
+function fmtDur(ms){
+  const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);
+  if(h>0)return h+'h '+( m%60)+'m';
+  if(m>0)return m+'m '+(s%60)+'s';
+  return s+'s';
+}
+function fmtTs(ms){return new Date(ms).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function checkHealth(){
+  const dot=document.getElementById('ws-dot'),lbl=document.getElementById('ws-label');
+  try{
+    const r=await fetch(WORKER+'/health',{method:'GET'});
+    if(r.ok){
+      const d=await r.json();
+      dot.style.background='var(--ok)';
+      lbl.textContent='Connected · key '+(d.keyVersion||'?');
+    }else{dot.style.background='var(--err)';lbl.textContent='Unreachable ('+r.status+')';}
+  }catch{dot.style.background='var(--err)';lbl.textContent='Unreachable';}
+}
+checkHealth();
+
+async function fetchLog(sid){
+  const r=await fetch(WORKER+'/log/'+encodeURIComponent(sid),{method:'GET'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function verifySnapshotsRemote(sid,snapshots){
+  const r=await fetch(WORKER+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sid,snapshots})});
+  if(!r.ok)throw new Error('Verify HTTP '+r.status);
+  return r.json();
+}
+
+function renderLog(data,fileData){
+  const entries=data.entries||[];
+  const sid=data.sessionId;
+  const area=document.getElementById('result-area');
+  document.getElementById('empty-state').style.display='none';
+  area.style.display='block';
+
+  let totalSnaps=entries.reduce((a,e)=>a+e.snapshotCount,0);
+  let timeSpan=entries.length>=2
+    ?fmtDur(entries[entries.length-1].lastWritingTime-entries[0].firstWritingTime)
+    :entries.length===1?fmtDur(entries[0].lastWritingTime-entries[0].firstWritingTime):'—';
+  let keys=new Set(entries.map(e=>e.keyVersion).filter(Boolean));
+
+  let compareHtml='';
+  let crossCheckStatus='';
+  if(fileData && fileData.snapshots){
+    const fs=fileData.snapshots;
+    const fsTotal=fs.length;
+    const fsSigned=fs.filter(s=>s.signed||s.keyVersion).length;
+    const serverTotal=totalSnaps;
+    const countMatch=fsTotal===serverTotal;
+    const wtMatch=entries.length>0 && fs.length>0
+      ?Math.abs((fs[fs.length-1].writingTime||0)-entries[entries.length-1].lastWritingTime)<2000
+      :null;
+    
+    crossCheckStatus=countMatch&&(wtMatch===null||wtMatch)?'ok':'mismatch';
+
+    compareHtml=`
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">File vs server cross-check</span>
+        <span class="badge ${crossCheckStatus==='ok'?'badge-ok':'badge-err'}">${crossCheckStatus==='ok'?'Match':'Mismatch'}</span>
+      </div>
+      <div class="panel-body">
+        ${checkRow(countMatch,'Snapshot count','File: '+fsTotal+' · Server log: '+serverTotal)}
+        ${wtMatch===null?'':checkRow(wtMatch,'Writing time (last snapshot)','File: '+fmtDur(fs[fs.length-1].writingTime||0)+' · Server: '+fmtDur(entries[entries.length-1]?.lastWritingTime||0))}
+        ${checkRow(fsSigned===fsTotal,'All snapshots signed','File reports '+fsSigned+'/'+fsTotal+' signed')}
+        ${fileData.keyVersion?checkRow(keys.has(fileData.keyVersion),'Key version in file matches server','File: '+esc(fileData.keyVersion)+' · Server: '+[...keys].map(esc).join(', ')):''}
+      </div>
+    </div>`;
+  }
+
+  let snapTableHtml='';
+  if(fileData && fileData.snapshots && fileData.snapshots.length){
+    const rows=fileData.snapshots.map((s,i)=>{
+      const isSigned=s.signed||!!s.keyVersion;
+      return `<div class="snap-row ${isSigned?'snap-signed':''}" style="border-left-color:${isSigned?'var(--ok)':'var(--border-strong)'}">
+        <span class="snap-id">Snap #${i+1}</span>
+        <span class="snap-wc">${(s.wordCount||0).toLocaleString()} words</span>
+        <span class="snap-wt">wt ${fmtDur(s.writingTime||0)}</span>
+        <span class="snap-status"><span class="badge ${isSigned?'badge-ok':'badge-gray'}">${isSigned?'signed':'unsigned'}</span></span>
+      </div>`;
+    }).join('');
+    snapTableHtml=`
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">File snapshot chain</span><span class="badge badge-gray">${fileData.snapshots.length} snapshots</span></div>
+      <div class="panel-body">${snapTableHtml||'<p style="color:var(--muted);font-size:.82rem">No snapshots in file.</p>'}${rows}</div>
+    </div>`;
+  }
+
+  let eventRows=entries.map((e,i)=>`
+    <tr>
+      <td><strong>Event ${i+1}</strong></td>
+      <td>${e.snapshotCount}</td>
+      <td>${fmtDur(e.firstWritingTime)} → ${fmtDur(e.lastWritingTime)}</td>
+      <td>${e.keyVersion?'<span class="badge badge-gray">'+esc(e.keyVersion)+'</span>':'—'}</td>
+      <td class="mono">${fmtTs(e.signedAt)}</td>
+    </tr>`).join('');
+
+  area.innerHTML=`
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px">
+      <div>
+        <h1>Session <span style="font-family:'Source Code Pro',monospace;font-weight:400">${esc(sid)}</span></h1>
+        <p class="hint sans" style="margin-top:2px">Signing log retrieved from server · ${entries.length} event${entries.length!==1?'s':''}</p>
+      </div>
+      ${entries.length?'<span class="badge badge-ok">Log found</span>':'<span class="badge badge-warn">No log entries</span>'}
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-l">Signing events</div><div class="stat-v">${entries.length}</div></div>
+      <div class="stat-card"><div class="stat-l">Snapshots signed</div><div class="stat-v">${totalSnaps}</div></div>
+      <div class="stat-card"><div class="stat-l">Writing span</div><div class="stat-v" style="font-size:1rem;margin-top:4px">${timeSpan}</div></div>
+      <div class="stat-card"><div class="stat-l">Key version(s)</div><div class="stat-v" style="font-size:.9rem;margin-top:4px">${[...keys].join(', ')||'—'}</div></div>
+    </div>
+
+    ${compareHtml}
+
+    ${entries.length?`
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">Server signing log</span><span class="hint" style="font-size:.68rem">written at signing time · cannot be altered by author</span></div>
+      <div class="panel-body" style="padding:0">
+        <table class="tbl">
+          <thead><tr><th>Event</th><th>Snapshots</th><th>Writing time</th><th>Key</th><th>Signed at</th></tr></thead>
+          <tbody>${eventRows}</tbody>
+        </table>
+      </div>
+    </div>`:'<div class="error-box">No signing log entries found for this session ID. The session may not have been signed yet, the ID may be incorrect, or entries may have expired (30-day TTL).</div>'}
+
+    ${snapTableHtml}
+
+    <p class="hint" style="margin-top:24px;font-size:.72rem">Log entries are written server-side at signing time and stored with a 30-day TTL. The session ID is the 10-digit verifier assigned to each document.</p>
+  `;
+}
+
+function checkRow(ok,label,detail){
+  const icon=ok
+    ?`<svg class="ok-icon" viewBox="0 0 18 18"><polyline points="3,9 7,13 15,5"/></svg>`
+    :ok===null
+    ?`<svg class="warn-icon" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><line x1="9" y1="5" x2="9" y2="10"/><line x1="9" y1="12" x2="9" y2="12.5" stroke-width="2.5"/></svg>`
+    :`<svg class="err-icon" viewBox="0 0 18 18"><line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/></svg>`;
+  return `<div class="match-row">
+    <span class="match-icon">${icon}</span>
+    <div><span style="font-weight:600">${esc(label)}</span><br><span style="color:var(--muted);font-size:.77rem">${esc(detail)}</span></div>
+  </div>`;
+}
+
+function extractSessionData(html){
+  const sidMatch=html.match(/Document ID[:\s]+(\d{10})/i);
+  const sid=sidMatch?sidMatch[1]:null;
+  const snapshotCount=(html.match(/Snap #\d+/g)||[]).length;
+  return{sid,snapshotCount};
+}
+
+function extractJsonData(json){
+  try{
+    const d=JSON.parse(json);
+    if(d.v!==4)return null;
+    return{
+      sid:d.vid||null,
+      snapshots:(d.s||[]).map(s=>({
+        writingTime:s.wt||0,
+        wordCount:s.w||0,
+        signed:s.signed||!!s.g,
+        keyVersion:s.kv||null,
+      })),
+      keyVersion:d.keyVersion||null,
+    };
+  }catch{return null;}
+}
+
+document.getElementById('btn-fetch-log').addEventListener('click',async()=>{
+  const sid=document.getElementById('session-id-input').value.trim();
+  if(!sid){alert('Enter a session ID.');return;}
+  const btn=document.getElementById('btn-fetch-log');
+  btn.disabled=true;btn.textContent='Fetching…';
+  try{
+    const data=await fetchLog(sid);
+    renderLog(data,null);
+  }catch(e){
+    document.getElementById('empty-state').style.display='none';
+    document.getElementById('result-area').style.display='block';
+    document.getElementById('result-area').innerHTML=`<div class="error-box">Failed to fetch log: ${esc(e.message)}</div>`;
+  }finally{btn.disabled=false;btn.textContent='Fetch signing log';}
+});
+
+document.getElementById('btn-load-file').addEventListener('click',()=>{
+  const f=document.getElementById('file-input').files[0];
+  if(!f){alert('Choose a file first.');return;}
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const raw=e.target.result;
+    let fileData=null,sid=null;
+    if(f.name.endsWith('.json')){
+      fileData=extractJsonData(raw);
+      if(!fileData){
+        document.getElementById('empty-state').style.display='none';
+        document.getElementById('result-area').style.display='block';
+        document.getElementById('result-area').innerHTML='<div class="error-box">Not a valid scrbr session file (v4 required).</div>';
+        return;
+      }
+      sid=fileData.sid;
+    }else{
+      const extracted=extractSessionData(raw);
+      sid=extracted.sid;
+      fileData={sid,snapshotCount:extracted.snapshotCount,snapshots:[]};
+    }
+    const sidInput=document.getElementById('session-id-input');
+    if(sid)sidInput.value=sid;
+    if(!sid){
+      document.getElementById('empty-state').style.display='none';
+      document.getElementById('result-area').style.display='block';
+      document.getElementById('result-area').innerHTML='<div class="error-box">Could not find a session ID in this file. Try entering the 10-digit ID manually.</div>';
+      return;
+    }
+    const btn=document.getElementById('btn-load-file');
+    btn.disabled=true;btn.textContent='Comparing…';
+    try{
+      const logData=await fetchLog(sid);
+      renderLog(logData,fileData);
+    }catch(er){
+      document.getElementById('empty-state').style.display='none';
+      document.getElementById('result-area').style.display='block';
+      document.getElementById('result-area').innerHTML=`<div class="error-box">Log fetch failed: ${esc(er.message)}</div>`;
+    }finally{btn.disabled=false;btn.textContent='Load & compare';}
+  };
+  reader.readAsText(f);
+});
+
+document.getElementById('session-id-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter')document.getElementById('btn-fetch-log').click();
+});
+</script>
